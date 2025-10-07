@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        body.overtime {
+            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            flex: 1;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .assignment-list {
+            margin: 20px 0;
+        }
+
+        .assignment-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .assignment-item:hover {
+            transform: translateX(5px);
+        }
+
+        .assignment-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .timer-display {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .timer-text {
+            font-size: 5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .overtime .timer-text {
+            color: #fc4a1a;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .current-assignment {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .break-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .complete-btn {
+            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .delete-btn {
+            background: #ff4444;
+            padding: 5px 15px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Homework Quest</h1>
+        
+        <div id="setupScreen">
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value" id="totalAssignments">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalTime">0m</div>
+                    <div class="stat-label">Total Time</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="endTime">--:--</div>
+                    <div class="stat-label">Estimated End</div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <h2 style="margin-bottom: 15px; color: #333;">Add Assignment</h2>
+                <div class="input-group">
+                    <input type="text" id="className" placeholder="Class Name (e.g., Math)">
+                    <input type="text" id="assignmentName" placeholder="Assignment Name">
+                    <input type="number" id="timeEstimate" placeholder="Minutes" min="1">
+                    <button onclick="addAssignment()">+ Add</button>
+                </div>
+            </div>
+
+            <div class="assignment-list" id="assignmentList"></div>
+
+            <button onclick="startQuest()" id="startBtn" style="width: 100%; padding: 20px; font-size: 1.2em;" disabled>
+                🚀 Start Quest
+            </button>
+        </div>
+
+        <div id="timerScreen" class="hidden">
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value" id="completedCount">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="remainingCount">0</div>
+                    <div class="stat-label">Remaining</div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+            </div>
+
+            <div class="timer-display">
+                <div class="current-assignment" id="currentAssignment"></div>
+                <div class="timer-text" id="timerDisplay">00:00</div>
+                <div id="statusText" style="font-size: 1.2em; color: #666;"></div>
+            </div>
+
+            <div class="button-group">
+                <button class="complete-btn" onclick="completeAssignment()">✓ Complete Assignment</button>
+                <button class="break-btn" id="breakBtn" onclick="takeBreak()" disabled>☕ Take Break (5 min)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let assignments = [];
+        let currentIndex = 0;
+        let timerInterval = null;
+        let secondsElapsed = 0;
+        let isOvertime = false;
+        let completedAssignments = 0;
+        let isOnBreak = false;
+        let reminderInterval = null;
+
+        function updateStats() {
+            const total = assignments.length;
+            const totalMinutes = assignments.reduce((sum, a) => sum + a.time, 0);
+            
+            document.getElementById('totalAssignments').textContent = total;
+            document.getElementById('totalTime').textContent = totalMinutes + 'm';
+            
+            if (total > 0) {
+                const now = new Date();
+                const endDate = new Date(now.getTime() + totalMinutes * 60000);
+                document.getElementById('endTime').textContent = 
+                    endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            } else {
+                document.getElementById('endTime').textContent = '--:--';
+            }
+            
+            document.getElementById('startBtn').disabled = total === 0;
+        }
+
+        function addAssignment() {
+            const className = document.getElementById('className').value.trim();
+            const assignmentName = document.getElementById('assignmentName').value.trim();
+            const time = parseInt(document.getElementById('timeEstimate').value);
+
+            if (!className || !assignmentName || !time || time < 1) {
+                alert('Please fill in all fields with valid values!');
+                return;
+            }
+
+            assignments.push({
+                class: className,
+                name: assignmentName,
+                time: time,
+                completed: false
+            });
+
+            document.getElementById('className').value = '';
+            document.getElementById('assignmentName').value = '';
+            document.getElementById('timeEstimate').value = '';
+
+            renderAssignments();
+            updateStats();
+        }
+
+        function renderAssignments() {
+            const list = document.getElementById('assignmentList');
+            list.innerHTML = assignments.map((a, i) => `
+                <div class="assignment-item ${a.completed ? 'completed' : ''}">
+                    <div>
+                        <strong>${a.class}</strong>: ${a.name} (${a.time} min)
+                    </div>
+                    <button class="delete-btn" onclick="deleteAssignment(${i})">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteAssignment(index) {
+            assignments.splice(index, 1);
+            renderAssignments();
+            updateStats();
+        }
+
+        function startQuest() {
+            if (assignments.length === 0) return;
+            
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('timerScreen').classList.remove('hidden');
+            
+            startTimer();
+        }
+
+        function startTimer() {
+            if (currentIndex >= assignments.length) {
+                endQuest();
+                return;
+            }
+
+            const assignment = assignments[currentIndex];
+            document.getElementById('currentAssignment').textContent = 
+                `${assignment.class}: ${assignment.name}`;
+            
+            secondsElapsed = 0;
+            isOvertime = false;
+            document.body.classList.remove('overtime');
+            
+            updateTimerDisplay();
+            updateProgress();
+            
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                updateTimerDisplay();
+                
+                const targetSeconds = assignment.time * 60;
+                
+                if (secondsElapsed === targetSeconds && !isOvertime) {
+                    isOvertime = true;
+                    document.body.classList.add('overtime');
+                    document.getElementById('statusText').textContent = '⚠️ OVERTIME!';
+                    showNotification('Time\'s up! Finish strong!');
+                }
+                
+                // Periodic reminders every 5 minutes
+                if (secondsElapsed % 300 === 0 && secondsElapsed > 0) {
+                    showNotification(`${Math.floor(secondsElapsed / 60)} minutes elapsed. Keep going!`);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(secondsElapsed / 60);
+            const seconds = secondsElapsed % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateProgress() {
+            const completed = assignments.filter(a => a.completed).length;
+            const total = assignments.length;
+            const percentage = (completed / total) * 100;
+            
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressFill').textContent = Math.round(percentage) + '%';
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('remainingCount').textContent = total - completed;
+            
+            // Update break button
+            const canBreak = completedAssignments > 0 && completedAssignments % 2 === 0 && !isOnBreak;
+            document.getElementById('breakBtn').disabled = !canBreak;
+        }
+
+        function completeAssignment() {
+            clearInterval(timerInterval);
+            document.body.classList.remove('overtime');
+            document.getElementById('statusText').textContent = '';
+            
+            assignments[currentIndex].completed = true;
+            completedAssignments++;
+            
+            showNotification('✓ Assignment completed! Great job!');
+            
+            currentIndex++;
+            
+            if (currentIndex < assignments.length) {
+                updateProgress();
+                setTimeout(() => startTimer(), 1000);
+            } else {
+                endQuest();
+            }
+        }
+
+        function takeBreak() {
+            if (isOnBreak) return;
+            
+            clearInterval(timerInterval);
+            isOnBreak = true;
+            document.getElementById('breakBtn').disabled = true;
+            
+            document.getElementById('currentAssignment').textContent = '☕ Break Time!';
+            document.getElementById('statusText').textContent = 'Relax for 5 minutes';
+            
+            let breakSeconds = 0;
+            const breakDuration = 300; // 5 minutes
+            
+            timerInterval = setInterval(() => {
+                breakSeconds++;
+                const remaining = breakDuration - breakSeconds;
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                document.getElementById('timerDisplay').textContent = 
+                    `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                
+                if (breakSeconds >= breakDuration) {
+                    clearInterval(timerInterval);
+                    isOnBreak = false;
+                    showNotification('Break over! Time to get back to work!');
+                    startTimer();
+                }
+            }, 1000);
+        }
+
+        function endQuest() {
+            clearInterval(timerInterval);
+            document.body.classList.remove('overtime');
+            
+            document.getElementById('timerDisplay').textContent = 'DONE!';
+            document.getElementById('currentAssignment').textContent = 
+                '🎉 All assignments completed!';
+            document.getElementById('statusText').textContent = 
+                'Amazing work! You completed all your homework!';
+            
+            showNotification('Quest Complete! 🏆');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        updateStats();
+    </script>
+</body>
+</html>
