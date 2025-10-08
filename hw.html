@@ -316,7 +316,6 @@
         let isOvertime = false;
         let completedAssignments = 0;
         let isOnBreak = false;
-        let reminderInterval = null;
 
         function updateStats() {
             const total = assignments.length;
@@ -359,19 +358,7 @@
             document.getElementById('timeEstimate').value = '';
 
             renderAssignments();
-            function updateTimerEndTime() {
-            const remainingMinutes = assignments
-                .slice(currentIndex)
-                .filter(a => !a.completed)
-                .reduce((sum, a) => sum + a.time, 0);
-            
-            const now = new Date();
-            const endDate = new Date(now.getTime() + remainingMinutes * 60000);
-            document.getElementById('timerEndTime').textContent = 
-                endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        }
-
-        updateStats();
+            updateStats();
         }
 
         function renderAssignments() {
@@ -399,6 +386,39 @@
             document.getElementById('timerScreen').classList.remove('hidden');
             
             startTimer();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(secondsElapsed / 60);
+            const seconds = secondsElapsed % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateProgress() {
+            const completed = assignments.filter(a => a.completed).length;
+            const total = assignments.length;
+            const percentage = (completed / total) * 100;
+            
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressFill').textContent = Math.round(percentage) + '%';
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('remainingCount').textContent = total - completed;
+            
+            const canBreak = completedAssignments % 2 === 1 && !isOnBreak;
+            document.getElementById('breakBtn').disabled = !canBreak;
+        }
+
+        function updateTimerEndTime() {
+            const remainingMinutes = assignments
+                .slice(currentIndex)
+                .filter(a => !a.completed)
+                .reduce((sum, a) => sum + a.time, 0);
+            
+            const now = new Date();
+            const endDate = new Date(now.getTime() + remainingMinutes * 60000);
+            document.getElementById('timerEndTime').textContent = 
+                endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
         function startTimer() {
@@ -434,33 +454,10 @@
                     showNotification('Time\'s up! Finish strong!');
                 }
                 
-                // Periodic reminders every 5 minutes
                 if (secondsElapsed % 300 === 0 && secondsElapsed > 0) {
                     showNotification(`${Math.floor(secondsElapsed / 60)} minutes elapsed. Keep going!`);
                 }
             }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(secondsElapsed / 60);
-            const seconds = secondsElapsed % 60;
-            document.getElementById('timerDisplay').textContent = 
-                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        }
-
-        function updateProgress() {
-            const completed = assignments.filter(a => a.completed).length;
-            const total = assignments.length;
-            const percentage = (completed / total) * 100;
-            
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressFill').textContent = Math.round(percentage) + '%';
-            document.getElementById('completedCount').textContent = completed;
-            document.getElementById('remainingCount').textContent = total - completed;
-            
-            // Update break button
-            const canBreak = completedAssignments % 2 === 1 && !isOnBreak;
-            document.getElementById('breakBtn').disabled = !canBreak;
         }
 
         function completeAssignment() {
@@ -492,10 +489,11 @@
             document.getElementById('breakBtn').disabled = true;
             
             document.getElementById('currentAssignment').textContent = '☕ Break Time!';
+            document.getElementById('allocatedTime').textContent = '';
             document.getElementById('statusText').textContent = 'Relax for 5 minutes';
             
             let breakSeconds = 0;
-            const breakDuration = 300; // 5 minutes
+            const breakDuration = 300;
             
             timerInterval = setInterval(() => {
                 breakSeconds++;
@@ -522,6 +520,7 @@
             document.getElementById('timerDisplay').textContent = 'DONE!';
             document.getElementById('currentAssignment').textContent = 
                 '🎉 All assignments completed!';
+            document.getElementById('allocatedTime').textContent = '';
             document.getElementById('statusText').textContent = 
                 'Amazing work! You completed all your homework!';
             
